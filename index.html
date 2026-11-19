@@ -1,0 +1,672 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>α (θ) – Diagram · Polar Graph Plotter</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='88'>◎</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Newsreader:opsz,wght@6..72,400;6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbfaf6;
+  --panel:#ffffff;
+  --ink:#23262e;
+  --ink-soft:#5c6069;
+  --line:#e4e2d9;
+  --line-soft:#edebE3;
+  --accent:#1d4ed8;          /* the measured-trace blue from the lab sheet */
+  --accent-soft:#eaf0ff;
+  --grid-dot:#82868f;
+  --grid-solid:#23262e;
+  --ok:#0f7b3d;
+  --warn:#a33b00;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Newsreader', Georgia, 'Times New Roman', serif;
+  font-size:16px;
+  line-height:1.5;
+  min-height:100vh;
+}
+h1,h2,h3,.gloock{font-family:'Gloock', 'Newsreader', Georgia, serif;font-weight:400}
+.smallcaps{font-variant:small-caps;letter-spacing:.06em}
+
+/* ── top bar ─────────────────────────────────────────── */
+header.topbar{
+  display:flex;align-items:baseline;justify-content:space-between;gap:1rem;
+  padding:1.1rem clamp(1rem,4vw,2.5rem);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:baseline;gap:.8rem}
+.brand .mark{width:1.6rem;height:1.6rem;align-self:center}
+.brand h1{font-size:1.35rem;letter-spacing:.01em}
+.brand .sub{color:var(--ink-soft);font-size:.9rem}
+.topbar .tag{font-size:.82rem;color:var(--ink-soft);border:1px solid var(--line);border-radius:999px;padding:.2rem .75rem;white-space:nowrap}
+
+/* ── layout ──────────────────────────────────────────── */
+main{
+  display:grid;grid-template-columns:minmax(340px,460px) 1fr;
+  gap:clamp(1rem,2.5vw,2rem);
+  padding:clamp(1rem,2.5vw,2rem) clamp(1rem,4vw,2.5rem) 3rem;
+  max-width:1500px;margin:0 auto;align-items:start;
+}
+@media (max-width:1020px){ main{grid-template-columns:1fr} }
+
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:1.1rem 1.1rem 1.2rem;box-shadow:0 1px 2px rgba(35,38,46,.04)}
+.panel + .panel{margin-top:1rem}
+.panel h2{font-size:1.05rem;margin-bottom:.15rem}
+.panel .hint{font-size:.83rem;color:var(--ink-soft);margin-bottom:.7rem}
+
+/* ── drop zone ───────────────────────────────────────── */
+.drop{
+  border:1.5px dashed #cfd0c6;border-radius:10px;padding:.9rem .8rem;text-align:center;
+  color:var(--ink-soft);font-size:.9rem;cursor:pointer;transition:border-color .15s, background .15s;
+  background:#fdfdfb;
+}
+.drop:hover{border-color:var(--accent);background:var(--accent-soft)}
+.drop.drag{border-color:var(--accent);background:var(--accent-soft)}
+.drop b{color:var(--accent);font-weight:400;text-decoration:underline;text-underline-offset:2px}
+.drop .file-meta{display:block;margin-top:.35rem;font-size:.8rem;color:var(--ok)}
+
+/* ── table ───────────────────────────────────────────── */
+.tablewrap{max-height:46vh;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:.75rem}
+table{width:100%;border-collapse:collapse;font-size:.92rem}
+thead th{
+  position:sticky;top:0;background:#f4f3ec;text-align:left;font-weight:400;
+  padding:.4rem .6rem;border-bottom:1px solid var(--line);color:var(--ink-soft);
+  font-variant:small-caps;letter-spacing:.05em;font-size:.8rem;
+}
+tbody td{border-bottom:1px solid var(--line-soft);padding:.15rem .35rem}
+tbody tr:nth-child(even){background:#fdfdfa}
+tbody input{
+  width:100%;border:0;background:transparent;font:inherit;color:inherit;
+  padding:.3rem .3rem;border-radius:6px;
+}
+tbody input:focus{outline:1.5px solid var(--accent);background:#fff}
+td.rowdel{width:2.2rem;text-align:center}
+.iconbtn{border:0;background:transparent;cursor:pointer;color:#b9b7ab;font-size:1.05rem;line-height:1;padding:.3rem;border-radius:6px}
+.iconbtn:hover{color:#b91c1c;background:#fdeeee}
+
+/* ── buttons ─────────────────────────────────────────── */
+.btnrow{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:.85rem}
+button.btn{
+  font-family:'Newsreader',serif;font-size:.92rem;color:var(--ink);
+  background:#f2f1ea;border:1px solid var(--line);border-radius:10px;
+  padding:.5rem .9rem;cursor:pointer;transition:background .15s, transform .05s;
+}
+button.btn:hover{background:#e9e8df}
+button.btn:active{transform:translateY(1px)}
+button.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.btn.primary:hover{background:#1740b8}
+button.btn.ghost{background:transparent}
+button.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── toggle ──────────────────────────────────────────── */
+.toggle{display:flex;align-items:center;gap:.6rem;margin-top:.8rem;user-select:none;cursor:pointer;width:max-content}
+.toggle input{position:absolute;opacity:0;pointer-events:none}
+.track{width:2.5rem;height:1.35rem;border-radius:999px;background:#d8d7cc;position:relative;transition:background .2s}
+.thumb{position:absolute;top:.16rem;left:.18rem;width:1.02rem;height:1.02rem;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.25);transition:left .2s}
+.toggle input:checked + .track{background:var(--accent)}
+.toggle input:checked + .track .thumb{left:1.3rem}
+.toggle input:focus-visible + .track{outline:2px solid var(--accent);outline-offset:2px}
+.toggle .lbl{font-size:.92rem}
+
+/* ── range switcher ──────────────────────────────────── */
+.rangepick{border:0;margin-top:.8rem;display:flex;flex-wrap:wrap;gap:.45rem;align-items:center;padding:0}
+.rangepick legend{font-size:.72rem;color:var(--ink-soft);font-variant:small-caps;letter-spacing:.06em;width:100%;margin-bottom:.1rem}
+.pill{position:relative}
+.pill input{position:absolute;opacity:0;pointer-events:none}
+.pill span{
+  display:inline-block;font-size:.85rem;color:var(--ink);cursor:pointer;
+  border:1px solid var(--line);border-radius:999px;padding:.32rem .75rem;background:#f7f6ef;
+  transition:border-color .15s, background .15s;
+}
+.pill em{font-style:normal;color:var(--ink-soft);font-size:.78em}
+.pill:hover span{border-color:var(--accent)}
+.pill input:checked + span{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.pill input:focus-visible + span{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── marker style picker ──────────────────────────────── */
+.markerpick{display:flex;align-items:center;flex-wrap:wrap;gap:.5rem;margin-top:.8rem}
+.range-label{font-size:.72rem;color:var(--ink-soft);font-variant:small-caps;letter-spacing:.06em;width:100%}
+.colorwell{display:inline-flex;align-items:center;gap:.4rem;border:1px solid var(--line);border-radius:10px;padding:.25rem .5rem;cursor:pointer;background:#f7f6ef}
+.colorwell input[type="color"]{width:1.6rem;height:1.6rem;border:0;background:transparent;padding:0;cursor:pointer}
+.colorwell span{font-size:.82rem;color:var(--ink-soft);min-width:4.2ch}
+.shapebtns{display:inline-flex;gap:.35rem}
+.shapebtn{
+  width:2rem;height:2rem;border-radius:9px;border:1px solid var(--line);background:#f7f6ef;
+  font-size:1rem;line-height:1;color:var(--ink);cursor:pointer;transition:border-color .15s, background .15s;
+}
+.shapebtn:hover{border-color:var(--accent)}
+.shapebtn.active{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent);color:var(--accent)}
+.shapebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ── status + stats ──────────────────────────────────── */
+.status{font-size:.84rem;margin-top:.6rem;min-height:1.3em;color:var(--ink-soft)}
+.status.ok{color:var(--ok)} .status.error{color:#b91c1c}
+.statline{display:flex;gap:1.1rem;flex-wrap:wrap;margin-top:.75rem;border-top:1px solid var(--line-soft);padding-top:.65rem}
+.stat .k{font-size:.72rem;color:var(--ink-soft);font-variant:small-caps;letter-spacing:.06em}
+.stat .v{font-size:1.02rem}
+
+/* ── chart column ────────────────────────────────────── */
+.chartbox{display:flex;flex-direction:column;align-items:center;gap:.6rem}
+.chartpad{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:clamp(.6rem,2vw,1.4rem);width:100%;display:flex;justify-content:center}
+#chart{width:100%;max-width:660px;height:auto}
+.chart-actions{display:flex;gap:.55rem;flex-wrap:wrap;justify-content:center}
+footer.note{max-width:1500px;margin:0 auto;padding:0 clamp(1rem,4vw,2.5rem) 2rem;color:var(--ink-soft);font-size:.8rem}
+footer.note code{background:#f2f1ea;border:1px solid var(--line);border-radius:5px;padding:.05rem .35rem;font-size:.78em}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+      <circle cx="24" cy="24" r="21" stroke="#23262e" stroke-width="2.4"/>
+      <circle cx="24" cy="24" r="13" stroke="#23262e" stroke-width="1.6" stroke-dasharray="3 3"/>
+      <circle cx="24" cy="24" r="5.2" stroke="#23262e" stroke-width="1.6" stroke-dasharray="2 2"/>
+      <line x1="24" y1="1.5" x2="24" y2="46.5" stroke="#23262e" stroke-width="2"/>
+      <line x1="1.5" y1="24" x2="46.5" y2="24" stroke="#23262e" stroke-width="2"/>
+      <circle cx="24" cy="9" r="3.1" fill="#1d4ed8"/>
+    </svg>
+    <div>
+      <h1>α (θ) – Diagram</h1>
+      <div class="sub">Directional diagram · polar coordinates</div>
+    </div>
+  </div>
+  <span class="tag">α / dB</span>
+</header>
+
+<main>
+  <!-- ════ controls column ════ -->
+  <section>
+    <div class="panel">
+      <h2>Data</h2>
+      <p class="hint">Upload a CSV with <em>angle, dB</em> columns (comma or semicolon separated, header row optional). Negative angles plot on the left half. You can also type straight into the table.</p>
+
+      <div class="drop" id="dropZone" role="button" tabindex="0" aria-label="Upload CSV file">
+        Drop your <b>.csv</b> here, or click to browse
+        <span class="file-meta" id="fileMeta"></span>
+      </div>
+      <input type="file" id="fileInput" accept=".csv,text/csv,text/plain" hidden>
+
+      <div class="tablewrap">
+        <table id="dataTable" aria-label="Angle and SWR meter level data">
+          <thead>
+            <tr><th style="width:44%">Angle [°]</th><th>SWR Meter Level [dB]</th><th></th></tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="btnrow">
+        <button class="btn ghost" id="addRowBtn">+ Add row</button>
+        <button class="btn ghost" id="loadDemoBtn">Load demo data</button>
+        <button class="btn ghost" id="clearTableBtn">Clear table</button>
+      </div>
+
+      <div class="btnrow" style="margin-top:.6rem">
+        <button class="btn primary" id="plotBtn">Plot graph</button>
+        <button class="btn" id="downloadCsvBtn">Download template CSV</button>
+      </div>
+
+      <div class="markerpick" id="markerPick">
+        <span class="range-label">marker style</span>
+        <label class="colorwell" title="Marker colour">
+          <input type="color" id="markerColor" value="#1d4ed8" aria-label="Marker colour">
+          <span id="markerHex">#1d4ed8</span>
+        </label>
+        <div class="shapebtns" role="radiogroup" aria-label="Marker shape">
+          <button type="button" class="shapebtn active" data-shape="circle"   role="radio" aria-checked="true"  title="Circle">●</button>
+          <button type="button" class="shapebtn"        data-shape="square"   role="radio" aria-checked="false" title="Square">■</button>
+          <button type="button" class="shapebtn"        data-shape="triangle" role="radio" aria-checked="false" title="Triangle">▲</button>
+          <button type="button" class="shapebtn"        data-shape="diamond"  role="radio" aria-checked="false" title="Diamond">◆</button>
+          <button type="button" class="shapebtn"        data-shape="cross"    role="radio" aria-checked="false" title="Cross">✚</button>
+        </div>
+      </div>
+
+      <label class="toggle" for="connectToggle">
+        <input type="checkbox" id="connectToggle" checked>
+        <span class="track"><span class="thumb"></span></span>
+        <span class="lbl">Connect the dots</span>
+      </label>
+
+      <fieldset class="rangepick" id="rangePick">
+        <legend>dB range</legend>
+        <label class="pill"><input type="radio" name="dbrange" value="lab" checked><span>Lab <em>0/−20</em></span></label>
+        <label class="pill"><input type="radio" name="dbrange" value="extended"><span>Extended <em>+8/−28</em></span></label>
+        <label class="pill"><input type="radio" name="dbrange" value="auto"><span>Auto</span></label>
+      </fieldset>
+
+      <div class="status" id="status" role="status"></div>
+      <div class="statline" id="statline" hidden>
+        <div class="stat"><div class="k">Points</div><div class="v" id="statN">–</div></div>
+        <div class="stat"><div class="k">Main lobe</div><div class="v" id="statMax">–</div></div>
+        <div class="stat"><div class="k">Deepest null</div><div class="v" id="statMin">–</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════ chart column ════ -->
+  <section class="chartbox">
+    <div class="chartpad">
+      <svg id="chart" viewBox="0 0 660 760" role="img" aria-label="Polar directional diagram, relative amplitude in dB versus angle in degrees"></svg>
+    </div>
+    <div class="chart-actions">
+      <button class="btn" id="downloadPngBtn">Download PNG</button>
+      <button class="btn" id="downloadSvgBtn">Download SVG</button>
+    </div>
+  </section>
+</main>
+
+<footer class="note">
+  CSV format: two columns, <code>angle,db</code> — e.g. <code>0,-0.49</code> … <code>180,-18.2</code>. Angles may be negative down to −180 (mapped onto the left half, matching the lab sheet). Use the range switcher (Lab 0/−20 · Extended +8/−28 · Auto) — values clamp to the selected rim/centre.
+</footer>
+
+<script>
+'use strict';
+/* ════════════════════════════════════════════════════════════
+   α (θ) – Diagram — polar plotter, reproduced from the
+   EE lab sheet: solid 0 dB rim, dotted −4/−8/−12/−16 rings,
+   solid cardinal axes, dotted 30° spokes, 0° at top.
+   ════════════════════════════════════════════════════════════ */
+const NS = 'http://www.w3.org/2000/svg';
+const RANGES = {
+  lab:      { max: 0, min: -20 },   // exactly the attached picture: rim 0 dB, centre −20 dB
+  extended: { max: 8, min: -28 },   // covers +4 … −26 dB spreads
+};
+const ringsFor = (max, min) => { const r = []; for (let v = max - 4; v > min; v -= 4) r.push(v); return r; };
+let currentRange = 'lab';            // 'lab' | 'extended' | 'auto'
+const SPOKES = [30, 60, 120, 150, 210, 240, 300, 330];
+const ANGLES = [0,30,60,90,120,150,180,210,240,270,300,330];
+const CHART_FONT = "'Times New Roman',Times,serif";
+
+// geometry of the SVG canvas
+const W = 660, H = 760;
+const CX = W / 2, CY = 415, R = 225;
+const TITLE_Y = 60, SUB_Y = 88, CAPTION_Y = 700;
+
+const $ = s => document.querySelector(s);
+const svg = $('#chart');
+
+function el(tag, attrs, parent){
+  const n = document.createElementNS(NS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  (parent || svg).appendChild(n);
+  return n;
+}
+const txt = (x, y, str, attrs, parent) => {
+  const t = el('text', Object.assign({x, y}, attrs || {}), parent);
+  t.textContent = str;
+  return t;
+};
+// angle: degrees, 0 at top, clockwise positive
+const angRad = d => d * Math.PI / 180;
+function polar(r, deg){
+  const a = angRad(deg);
+  return [CX + r * Math.sin(a), CY - r * Math.cos(a)];
+}
+const dbToR = (db, range) => R * (Math.min(range.max, Math.max(range.min, db)) - range.min) / (range.max - range.min);
+
+// pick the active range: fixed lab/extended, or derived from the table in auto mode
+function autoRange(rows){
+  const vals = rows.map(r => r[1]);
+  const hi = Math.max(...vals), lo = Math.min(...vals);
+  const max = Math.floor(hi / 4) * 4 + 4;                       // one 4-dB step of headroom above the data
+  let min = Math.floor(lo / 4) * 4;                             // centre at or below the lowest value…
+  if (min >= lo || Math.abs(min - lo) < 1e-9) min -= 4;         // …with headroom below it
+  if (max - min < 12) return { max: max, min: max - 12 };       // never flatter than 3 rings
+  return { max, min };
+}
+function activeRange(){
+  if (currentRange !== 'auto') return RANGES[currentRange];
+  const { rows } = readTable();
+  return (rows && rows.length >= 2) ? autoRange(rows) : RANGES.lab;
+}
+
+/* ── static template: title, grid, labels ─────────────────── */
+function drawTemplate(range){
+  range = range || activeRange();
+  const RINGS = ringsFor(range.max, range.min);
+  svg.innerHTML = '';
+
+  // paper background
+  el('rect', {x:0, y:0, width:W, height:H, fill:'#ffffff'});
+
+  // title + subtitle — Times Roman, heading kept small like the sheet
+  txt(CX, TITLE_Y + 4, 'a (θ) – Diagram', {
+    'text-anchor':'middle', 'font-size':17, fill:'#23262e', 'font-weight':700,
+    'font-family':CHART_FONT
+  });
+  txt(CX, SUB_Y, 'a / dB', {
+    'text-anchor':'middle', 'font-size':17, fill:'#23262e', 'font-weight':700,
+    'font-family':CHART_FONT
+  });
+
+  // dotted spokes (skip cardinals, those are solid axes)
+  for (const deg of SPOKES){
+    const [x2, y2] = polar(R, deg);
+    el('line', {x1:CX, y1:CY, x2, y2, stroke:'var(--grid-dot)', 'stroke-width':1.4, 'stroke-dasharray':'1.6 3.2'});
+  }
+  // solid cardinal axes, extending a touch beyond the rim like the sheet
+  el('line', {x1:CX, y1:CY - R - 26, x2:CX, y2:CY + R + 8, stroke:'#23262e', 'stroke-width':2.4});
+  el('line', {x1:CX - R - 8, y1:CY, x2:CX + R + 8, y2:CY, stroke:'#23262e', 'stroke-width':2.4});
+
+  // dotted rings
+  for (const db of RINGS){
+    el('circle', {cx:CX, cy:CY, r:dbToR(db, range), fill:'none', stroke:'var(--grid-dot)', 'stroke-width':1.4, 'stroke-dasharray':'1.6 3.2'});
+  }
+  // small solid centre circle (the range floor boundary)
+  el('circle', {cx:CX, cy:CY, r:16, fill:'none', stroke:'#23262e', 'stroke-width':1.8});
+  // solid outer rim (top of the dB range)
+  el('circle', {cx:CX, cy:CY, r:R, fill:'none', stroke:'#23262e', 'stroke-width':2.6});
+
+  // ── dB ring labels on both axes, both directions — bold, centred on the ring/axis crossings ──
+  const lbl = {
+    'font-size':16, fill:'#23262e', 'font-family':CHART_FONT, 'font-weight':700,
+    'paint-order':'stroke', stroke:'#ffffff', 'stroke-width':5, 'stroke-linejoin':'round'
+  };
+  for (const db of RINGS){
+    const r = dbToR(db, range);
+    // vertical, above centre — vertically centred on the ring crossing
+    txt(CX + 8, CY - r, String(db), Object.assign({'text-anchor':'start', 'dominant-baseline':'central'}, lbl));
+    // vertical, below centre — vertically centred on the ring crossing
+    txt(CX + 8, CY + r, String(db), Object.assign({'text-anchor':'start', 'dominant-baseline':'central'}, lbl));
+    // horizontal, left of centre — sits just above the axis line, centred on the ring crossing
+    txt(CX - r, CY - 9, String(db), Object.assign({'text-anchor':'middle'}, lbl));
+    // horizontal, right of centre
+    txt(CX + r, CY - 9, String(db), Object.assign({'text-anchor':'middle'}, lbl));
+  }
+
+  // ── angle labels outside the rim, ⁰ superscript like the sheet ──
+  for (const deg of ANGLES){
+    const [x, y] = polar(R + 30, deg);
+    const t = txt(x, y, String(deg), {
+      'text-anchor':'middle', 'dominant-baseline':'central', 'font-size':22, fill:'#23262e',
+      'font-family':CHART_FONT, 'font-weight':700
+    });
+    const sup = el('tspan', {'font-size':13, 'baseline-shift':'super'}, t);
+    sup.textContent = '0';
+  }
+
+  // caption — one line, bold Times Roman, with the active range ticked at the end
+  txt(CX, CAPTION_Y + 10, 'Directional Diagram in Polar Coordinates: R-Axis – Relative Amplitude (Log)', {
+    'text-anchor':'middle', 'font-size':12, fill:'#23262e', 'font-weight':700,
+    'font-family':CHART_FONT
+  });
+
+  // layer hook for the trace
+  el('g', {id:'traceLayer'});
+}
+
+/* ── smooth path through points (Catmull-Rom → Bézier) ───── */
+function smoothPath(pts, closed){
+  if (pts.length < 3) return 'M' + pts.map(p => p.join(' ')).join(' L');
+  const wrap = (i) => closed ? (i + pts.length) % pts.length : Math.min(Math.max(i, 0), pts.length - 1);
+  let d = `M${pts[0][0].toFixed(2)} ${pts[0][1].toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++){
+    const p0 = pts[wrap(i - 1)],
+          p1 = pts[i],
+          p2 = pts[i + 1],
+          p3 = pts[wrap(i + 2)];
+    const c1 = [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6];
+    const c2 = [p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6];
+    d += ` C${c1[0].toFixed(2)} ${c1[1].toFixed(2)} ${c2[0].toFixed(2)} ${c2[1].toFixed(2)} ${p2[0].toFixed(2)} ${p2[1].toFixed(2)}`;
+  }
+  return d;
+}
+
+/* ── marker style: user-adjustable colour + shape ─────────── */
+const markerStyle = { color: '#1d4ed8', shape: 'circle' };
+
+function darken(hex, f){
+  const n = hex.replace('#', '');
+  const v = n.length === 3 ? n.split('').map(c => c + c).join('') : n;
+  const [r, g, b] = [0, 2, 4].map(i => Math.round(parseInt(v.slice(i, i + 2), 16) * f));
+  return `rgb(${r},${g},${b})`;
+}
+function drawMarker(layer, x, y, shape, color){
+  const stroke = darken(color, 0.72);
+  const common = { stroke, 'stroke-width': 1.6, fill: color };
+  switch (shape){
+    case 'square':
+      el('rect', {x: x - 4.8, y: y - 4.8, width: 9.6, height: 9.6, rx: 1.2, ...common}, layer); break;
+    case 'triangle':
+      el('path', {d: `M${x} ${y - 5.8} L${x + 5.4} ${y + 4.4} L${x - 5.4} ${y + 4.4} Z`, 'stroke-linejoin':'round', ...common}, layer); break;
+    case 'diamond':
+      el('path', {d: `M${x} ${y - 6.2} L${x + 5.2} ${y} L${x} ${y + 6.2} L${x - 5.2} ${y} Z`, 'stroke-linejoin':'round', ...common}, layer); break;
+    case 'cross': {
+      const t = 1.9, s = 5.6;
+      el('path', {d: `M${x-t} ${y-s} H${x+t} V${y-t} H${x+s} V${y+t} H${x+t} V${y+s} H${x-t} V${y+t} H${x-s} V${y-t} H${x-t} Z`, 'stroke-linejoin':'round', ...common}, layer); break;
+    }
+    default: // circle
+      el('circle', {cx: x, cy: y, r: 5.4, ...common}, layer);
+  }
+}
+
+function plotData(rows, connect){
+  const range = activeRange();
+  drawTemplate(range);
+  const layer = svg.querySelector('#traceLayer');
+  const pts = rows
+    .map(([deg, db]) => { const [x, y] = polar(dbToR(db, range), ((deg % 360) + 360) % 360); return [x, y]; })
+    .filter(Boolean);
+  const angs = rows.map(r => ((r[0] % 360) + 360) % 360);
+  const closed = angs.length > 2 && (Math.max(...angs) - Math.min(...angs)) >= 350;
+
+  if (connect && pts.length > 1){
+    el('path', {
+      d: smoothPath(pts, closed) + (closed ? ' Z' : ''), fill:'none',
+      stroke: markerStyle.color, 'stroke-width':2.6, 'stroke-linejoin':'round','stroke-linecap':'round',
+      opacity:0.95
+    }, layer);
+  }
+  // markers in the user-chosen colour + shape
+  for (const [x, y] of pts){
+    drawMarker(layer, x, y, markerStyle.shape, markerStyle.color);
+  }
+}
+
+/* ── table handling ───────────────────────────────────────── */
+const tbody = $('#tbody');
+function addRow(angle='', db=''){
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td><input class="in-angle" type="number" step="any" min="-360" max="360" inputmode="decimal" placeholder="0" aria-label="Angle in degrees"></td>
+    <td><input class="in-db"   type="number" step="any" max="10"  inputmode="decimal" placeholder="-12.5" aria-label="SWR meter level in dB"></td>
+    <td class="rowdel"><button class="iconbtn" title="Remove row" aria-label="Remove row">×</button></td>`;
+  tr.querySelector('.in-angle').value = angle;
+  tr.querySelector('.in-db').value = db;
+  tr.querySelector('.iconbtn').addEventListener('click', () => tr.remove());
+  tbody.appendChild(tr);
+}
+function readTable(){
+  const rows = [];
+  for (const tr of tbody.querySelectorAll('tr')){
+    const a = tr.querySelector('.in-angle').value.trim();
+    const d = tr.querySelector('.in-db').value.trim();
+    if (a === '' && d === '') continue;
+    const fa = parseFloat(a), fd = parseFloat(d);
+    if (Number.isNaN(fa) || Number.isNaN(fd)) return {error:'Every row needs both an angle and a dB value (numbers only).'};
+    rows.push([fa, fd]);
+  }
+  return {rows};
+}
+function fillTable(rows){
+  tbody.innerHTML = '';
+  for (const [a, d] of rows) addRow(a, d);
+}
+function setStatus(msg, kind){
+  const s = $('#status');
+  s.textContent = msg || '';
+  s.className = 'status' + (kind ? ' ' + kind : '');
+}
+function updateStats(rows){
+  const box = $('#statline');
+  if (!rows.length){ box.hidden = true; return; }
+  const max = Math.max(...rows.map(r => r[1]));
+  const min = Math.min(...rows.map(r => r[1]));
+  const atMax = rows.find(r => r[1] === max)[0];
+  $('#statN').textContent = rows.length;
+  $('#statMax').textContent = `${max.toFixed(2)} dB @ ${atMax}°`;
+  $('#statMin').textContent = `${min.toFixed(2)} dB`;
+  box.hidden = false;
+}
+
+/* ── CSV parsing ──────────────────────────────────────────── */
+function parseCsv(text){
+  const lines = text.split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith('#'));
+  if (!lines.length) return {error:'That file looks empty.'};
+  const delim = (lines[0].match(/;/g) || []).length > (lines[0].match(/,/g) || []).length ? ';' : (lines[0].includes('\t') ? '\t' : ',');
+  const rows = [];
+  for (const line of lines){
+    const cells = line.split(delim).map(c => c.trim().replace(/^"|"$/g, ''));
+    const nums = cells.map(c => parseFloat(c));
+    if (nums.filter(n => !Number.isNaN(n)).length >= 2){
+      // guess: first numeric col = angle, second = dB
+      const idx = cells.map((c,i) => Number.isNaN(parseFloat(c)) ? -1 : i).filter(i => i >= 0);
+      rows.push([parseFloat(cells[idx[0]]), parseFloat(cells[idx[1]])]);
+    } else if (rows.length === 0 && /angle|deg|swr|db|level/i.test(line)){
+      continue; // header row
+    }
+  }
+  if (!rows.length) return {error:'No numeric rows found. Expected two columns: angle, dB.'};
+  return {rows};
+}
+
+/* ── demo data: dipole-like pattern, 10° steps, negative = left half ── */
+function demoRows(){
+  const rows = [];
+  const wobble = deg => ((Math.sin(deg * 12.9898) * 43758.5453) % 1) * 0.35;
+  for (let deg = 180; deg >= -180; deg -= 10){
+    const t = angRad(deg);
+    const amp = Math.pow(Math.abs(Math.cos(t)), 1.6) + 0.115;
+    let db = 20 * Math.log10(amp) + wobble(deg);   // peaks at 0 dB, fits the Lab template
+    if (deg === 0 || deg === 180 || deg === -180) db = Math.min(db, 4);
+    rows.push([deg, Math.max(-28, Math.min(8, +db.toFixed(2)))]);
+  }
+  return rows;
+}
+
+/* ── exports ──────────────────────────────────────────────── */
+function svgString(){
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('xmlns', NS);
+  // inline resolved colors (CSS vars don't survive serialization)
+  const map = {'var(--grid-dot)':'#82868f', 'var(--grid-solid)':'#23262e'};
+  clone.innerHTML = clone.innerHTML.replace(/var\(--grid-dot\)/g, map['var(--grid-dot)'])
+                                    .replace(/var\(--grid-solid\)/g, map['var(--grid-solid)']);
+  return new XMLSerializer().serializeToString(clone);
+}
+function download(name, blob){
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'), {href:url, download:name});
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+}
+function exportPng(){
+  const xml = svgString();
+  const img = new Image();
+  const svgBlob = new Blob([xml], {type:'image/svg+xml;charset=utf-8'});
+  const url = URL.createObjectURL(svgBlob);
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = W * 2; c.height = H * 2;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, c.width, c.height);
+    ctx.scale(2, 2);
+    ctx.drawImage(img, 0, 0, W, H);
+    URL.revokeObjectURL(url);
+    c.toBlob(b => download('a-theta-diagram.png', b), 'image/png');
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); setStatus('PNG export failed — try SVG instead.', 'error'); };
+  img.src = url;
+}
+
+/* ── events ───────────────────────────────────────────────── */
+function doPlot(){
+  const {rows, error} = readTable();
+  if (error){ setStatus(error, 'error'); return; }
+  if (rows.length < 2){ setStatus('Need at least 2 points to plot.', 'error'); return; }
+  rows.sort((a, b) => (((a[0] % 360) + 360) % 360) - (((b[0] % 360) + 360) % 360));
+  plotData(rows, $('#connectToggle').checked);
+  updateStats(rows);
+  setStatus(`Plotted ${rows.length} points.`, 'ok');
+}
+
+$('#plotBtn').addEventListener('click', doPlot);
+$('#addRowBtn').addEventListener('click', () => addRow());
+$('#clearTableBtn').addEventListener('click', () => { tbody.innerHTML = ''; updateStats([]); drawTemplate(); setStatus(''); });
+$('#loadDemoBtn').addEventListener('click', () => { fillTable(demoRows()); setStatus('Demo dipole pattern loaded — press Plot.', 'ok'); });
+$('#connectToggle').addEventListener('change', () => { const {rows} = readTable(); if (rows && rows.length >= 2) doPlot(); });
+
+// marker style picker — re-plot when data is available
+const markerColorInput = $('#markerColor'), markerHex = $('#markerHex');
+markerColorInput.addEventListener('input', () => {
+  markerStyle.color = markerColorInput.value;
+  markerHex.textContent = markerColorInput.value;
+  const { rows, error } = readTable();
+  if (!error && rows && rows.length >= 2) doPlot();
+});
+document.querySelectorAll('.shapebtn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    markerStyle.shape = btn.dataset.shape;
+    document.querySelectorAll('.shapebtn').forEach(b => {
+      const on = b === btn;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-checked', String(on));
+    });
+    const { rows, error } = readTable();
+    if (!error && rows && rows.length >= 2) doPlot();
+  });
+});
+
+// dB range switcher — re-plot with the new template when data is available, else just redraw
+document.querySelectorAll('input[name="dbrange"]').forEach(radio => {
+  radio.addEventListener('change', () => {
+    currentRange = radio.value;
+    const { rows, error } = readTable();
+    if (!error && rows && rows.length >= 2) { doPlot(); return; }
+    drawTemplate();
+    setStatus(currentRange === 'auto' ? 'Auto range: needs ≥2 points of data to compute.' : `${radio.value === 'lab' ? 'Lab' : 'Extended'} range selected.`);
+  });
+});
+$('#downloadPngBtn').addEventListener('click', exportPng);
+$('#downloadSvgBtn').addEventListener('click', () => download('a-theta-diagram.svg', new Blob([svgString()], {type:'image/svg+xml'})));
+$('#downloadCsvBtn').addEventListener('click', () => {
+  const csv = 'angle,swr_meter_level_db\n' + demoRows().map(([a,d]) => `${a},${d}`).join('\n');
+  download('polar-data-template.csv', new Blob([csv], {type:'text/csv'}));
+});
+
+const dz = $('#dropZone'), fi = $('#fileInput');
+dz.addEventListener('click', () => fi.click());
+dz.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fi.click(); } });
+for (const ev of ['dragenter','dragover']) dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('drag'); });
+for (const ev of ['dragleave','drop'])      dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('drag'); });
+dz.addEventListener('drop', e => { if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]); });
+fi.addEventListener('change', () => { if (fi.files.length) handleFile(fi.files[0]); });
+
+function handleFile(file){
+  const reader = new FileReader();
+  reader.onload = () => {
+    const {rows, error} = parseCsv(String(reader.result));
+    if (error){ setStatus(error, 'error'); return; }
+    fillTable(rows.sort((a,b) => a[0]-b[0]));
+    $('#fileMeta').textContent = `${file.name} — ${rows.length} rows loaded`;
+    setStatus(`Loaded ${rows.length} rows from ${file.name}. Press Plot.`, 'ok');
+  };
+  reader.onerror = () => setStatus('Could not read the file.', 'error');
+  reader.readAsText(file);
+}
+
+/* ── boot: empty template + a few blank rows ─────────────── */
+drawTemplate();
+for (let i = 0; i < 6; i++) addRow();
+</script>
+</body>
+</html>
